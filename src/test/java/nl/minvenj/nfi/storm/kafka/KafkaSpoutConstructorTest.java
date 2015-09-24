@@ -145,4 +145,22 @@ public class KafkaSpoutConstructorTest {
             }
         }));
     }
+
+    @Test
+    public void testKafkaSpoutCreationWithGroupId(){
+        RichKafkaSpout spout = spy(new RichKafkaSpout("group1","OVERLOAD"));
+
+        TopologyContext topology = mock(TopologyContext.class);
+        SpoutOutputCollector collector = mock(SpoutOutputCollector.class);
+
+        Map<String, Object> config = new HashMap<String, Object>();
+        config.put(ConfigUtils.CONFIG_TOPIC, "topic");
+        config.put(ConfigUtils.CONFIG_GROUP, "thisShouldNotBeIncludedInConfigForSpout");
+        doNothing().when(spout).createConsumer(config);
+
+        spout.open(config, topology, collector);
+
+        assertEquals("Wrong Topic Name", spout._topic, "OVERLOAD");
+        assertEquals("Wrong Topic Name", spout.groupId, "group1");
+    }
 }
